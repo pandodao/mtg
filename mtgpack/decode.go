@@ -3,25 +3,22 @@ package mtgpack
 import (
 	"bytes"
 	"encoding/binary"
+	"io"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 type Decoder struct {
-	r *bytes.Reader
+	io.Reader
 }
 
 func NewDecoder(b []byte) *Decoder {
-	return &Decoder{r: bytes.NewReader(b)}
-}
-
-func (d *Decoder) Read(b []byte) (int, error) {
-	return d.r.Read(b)
+	return &Decoder{Reader: bytes.NewReader(b)}
 }
 
 func (d *Decoder) read(b []byte) error {
-	_, err := d.r.Read(b)
+	_, err := d.Read(b)
 	return err
 }
 

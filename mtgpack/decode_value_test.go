@@ -1,6 +1,7 @@
 package mtgpack
 
 import (
+	"bytes"
 	"math"
 	"math/rand"
 	"reflect"
@@ -29,157 +30,110 @@ func TestIsByteArray(t *testing.T) {
 }
 
 func TestDecodeValue(t *testing.T) {
-	t.Run("int8", func(t *testing.T) {
-		var (
-			e = NewEncoder()
-			x = int8(rand.Intn(math.MaxInt8))
-			y int8
-		)
+	var (
+		buf bytes.Buffer
+		enc = &Encoder{buf: &buf}
+		dec = &Decoder{Reader: &buf}
+	)
 
-		require.NoErrorf(t, e.EncodeInt8(x), "encode int8")
-		d := NewDecoder(e.Bytes())
-		require.NoErrorf(t, DecodeValue(d, &y), "decode int8")
+	t.Run("int8", func(t *testing.T) {
+		var x, y int8
+		x = int8(rand.Intn(math.MaxInt8))
+
+		require.NoErrorf(t, enc.EncodeInt8(x), "encode int8")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode int8")
 		assert.Equal(t, x, y)
-		assert.Emptyf(t, d.r.Len(), "decoder has not remaining bytes")
 	})
 
 	t.Run("int16", func(t *testing.T) {
-		var (
-			e = NewEncoder()
-			x = int16(rand.Intn(math.MaxInt16))
-			y int16
-		)
+		var x, y int16
+		x = int16(rand.Intn(math.MaxInt16))
 
-		require.NoErrorf(t, e.EncodeInt16(x), "encode int16")
-		d := NewDecoder(e.Bytes())
-		require.NoErrorf(t, DecodeValue(d, &y), "decode int16")
+		require.NoErrorf(t, enc.EncodeInt16(x), "encode int16")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode int16")
 		assert.Equal(t, x, y)
-		assert.Emptyf(t, d.r.Len(), "decoder has not remaining bytes")
 	})
 
 	t.Run("int32", func(t *testing.T) {
-		var (
-			e = NewEncoder()
-			x = rand.Int31n(math.MaxInt32)
-			y int32
-		)
+		var x, y int32
+		x = int32(rand.Intn(math.MaxInt32))
 
-		require.NoErrorf(t, e.EncodeInt32(x), "encode int32")
-		d := NewDecoder(e.Bytes())
-		require.NoErrorf(t, DecodeValue(d, &y), "decode int32")
+		require.NoErrorf(t, enc.EncodeInt32(x), "encode int32")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode int32")
 		assert.Equal(t, x, y)
-		assert.Emptyf(t, d.r.Len(), "decoder has not remaining bytes")
 	})
 
 	t.Run("int64", func(t *testing.T) {
-		var (
-			e = NewEncoder()
-			x = rand.Int63n(math.MaxInt64)
-			y int64
-		)
+		var x, y int64
+		x = int64(rand.Intn(math.MaxInt64))
 
-		require.NoErrorf(t, e.EncodeInt64(x), "encode int64")
-		d := NewDecoder(e.Bytes())
-		require.NoErrorf(t, DecodeValue(d, &y), "decode int64")
+		require.NoErrorf(t, enc.EncodeInt64(x), "encode int64")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode int64")
 		assert.Equal(t, x, y)
-		assert.Emptyf(t, d.r.Len(), "decoder has not remaining bytes")
 	})
 
 	t.Run("uint8", func(t *testing.T) {
-		var (
-			e = NewEncoder()
-			x = uint8(rand.Intn(math.MaxUint8))
-			y uint8
-		)
+		var x, y uint8
+		x = uint8(rand.Intn(math.MaxUint8))
 
-		require.NoErrorf(t, e.EncodeUint8(x), "encode uint8")
-		d := NewDecoder(e.Bytes())
-		require.NoErrorf(t, DecodeValue(d, &y), "decode uint8")
+		require.NoErrorf(t, enc.EncodeUint8(x), "encode uint8")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode uint8")
 		assert.Equal(t, x, y)
-		assert.Emptyf(t, d.r.Len(), "decoder has not remaining bytes")
 	})
 
 	t.Run("uint16", func(t *testing.T) {
-		var (
-			e = NewEncoder()
-			x = uint16(rand.Intn(math.MaxUint16))
-			y uint16
-		)
+		var x, y uint16
+		x = uint16(rand.Intn(math.MaxUint16))
 
-		require.NoErrorf(t, e.EncodeUint16(x), "encode uint16")
-		d := NewDecoder(e.Bytes())
-		require.NoErrorf(t, DecodeValue(d, &y), "decode uint16")
+		require.NoErrorf(t, enc.EncodeUint16(x), "encode uint16")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode uint16")
 		assert.Equal(t, x, y)
-		assert.Emptyf(t, d.r.Len(), "decoder has not remaining bytes")
 	})
 
 	t.Run("uint32", func(t *testing.T) {
-		var (
-			e = NewEncoder()
-			x = uint32(rand.Intn(math.MaxUint32))
-			y uint32
-		)
+		var x, y uint32
+		x = uint32(rand.Intn(math.MaxUint32))
 
-		require.NoErrorf(t, e.EncodeUint32(x), "encode uint32")
-		d := NewDecoder(e.Bytes())
-		require.NoErrorf(t, DecodeValue(d, &y), "decode uint32")
+		require.NoErrorf(t, enc.EncodeUint32(x), "encode uint32")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode uint32")
 		assert.Equal(t, x, y)
-		assert.Emptyf(t, d.r.Len(), "decoder has not remaining bytes")
 	})
 
 	t.Run("uint64", func(t *testing.T) {
-		var (
-			e = NewEncoder()
-			x = uint64(rand.Int63n(math.MaxUint32))
-			y uint64
-		)
+		var x, y uint64
+		x = uint64(rand.Int63n(math.MaxUint32))
 
-		require.NoErrorf(t, e.EncodeUint64(x), "encode uint64")
-		d := NewDecoder(e.Bytes())
-		require.NoErrorf(t, DecodeValue(d, &y), "decode uint64")
+		require.NoErrorf(t, enc.EncodeUint64(x), "encode uint64")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode uint64")
 		assert.Equal(t, x, y)
-		assert.Emptyf(t, d.r.Len(), "decoder has not remaining bytes")
 	})
 
 	t.Run("string", func(t *testing.T) {
-		var (
-			e = NewEncoder()
-			x = "hello world"
-			y string
-		)
+		var x, y string
+		x = "hello world"
 
-		require.NoErrorf(t, e.EncodeString(x), "encode string")
-		d := NewDecoder(e.Bytes())
-		require.NoErrorf(t, DecodeValue(d, &y), "decode string")
+		require.NoErrorf(t, enc.EncodeString(x), "encode string")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode string")
 		assert.Equal(t, x, y)
-		assert.Emptyf(t, d.r.Len(), "decoder has not remaining bytes")
 	})
 
 	t.Run("uuid", func(t *testing.T) {
-		var (
-			e = NewEncoder()
-			x = uuid.New()
-			y uuid.UUID
-		)
+		var x, y uuid.UUID
+		x = uuid.New()
 
-		require.NoErrorf(t, e.EncodeUUID(x), "encode uuid")
-		d := NewDecoder(e.Bytes())
-		require.NoErrorf(t, DecodeValue(d, &y), "decode uuid")
+		require.NoErrorf(t, enc.EncodeUUID(x), "encode uuid")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode uuid")
 		assert.Equal(t, x, y)
-		assert.Emptyf(t, d.r.Len(), "decoder has not remaining bytes")
 	})
 
 	t.Run("decimal", func(t *testing.T) {
-		var (
-			e = NewEncoder()
-			x = decimal.NewFromFloat(123.456)
-			y decimal.Decimal
-		)
+		var x, y decimal.Decimal
+		x = decimal.NewFromFloat(1.234)
 
-		require.NoErrorf(t, e.EncodeDecimal(x), "encode decimal")
-		d := NewDecoder(e.Bytes())
-		require.NoErrorf(t, DecodeValue(d, &y), "decode decimal")
+		require.NoErrorf(t, enc.EncodeDecimal(x), "encode decimal")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode decimal")
 		assert.Equal(t, x.String(), y.String())
-		assert.Emptyf(t, d.r.Len(), "decoder has not remaining bytes")
 	})
+
+	assert.Emptyf(t, buf.Len(), "decoder has not remaining bytes")
 }

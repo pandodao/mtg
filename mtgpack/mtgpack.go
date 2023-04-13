@@ -1,6 +1,10 @@
 package mtgpack
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/shopspring/decimal"
+)
 
 type CustomEncoder interface {
 	EncodeMtg(*Encoder) error
@@ -21,3 +25,10 @@ func isByteArray(val reflect.Value) (int, bool) {
 
 	return 0, false
 }
+
+var (
+	customDecoderType = reflect.TypeOf((*CustomDecoder)(nil)).Elem()
+	customEncoderType = reflect.TypeOf((*CustomEncoder)(nil)).Elem()
+
+	decimalType = reflect.TypeOf(decimal.Decimal{})
+)

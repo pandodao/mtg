@@ -3,14 +3,6 @@ package mtgpack
 import (
 	"fmt"
 	"reflect"
-
-	"github.com/shopspring/decimal"
-)
-
-var (
-	customDecoderType = reflect.TypeOf((*CustomDecoder)(nil)).Elem()
-
-	decimalType = reflect.TypeOf(decimal.Decimal{})
 )
 
 func DecodeValue(d *Decoder, v interface{}) error {
