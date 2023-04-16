@@ -18,6 +18,10 @@ type Header struct {
 	Action     uint16    `json:"action"`
 }
 
+func (h Header) HasFollowID() bool {
+	return h.FollowID != uuid.Nil
+}
+
 func (h *Header) DecodeMtg(d *mtgpack.Decoder) error {
 	var err error
 	h.Version, err = d.DecodeUint8()
