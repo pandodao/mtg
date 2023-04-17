@@ -23,9 +23,13 @@ func (m *MultisigReceiver) DecodeMtg(d *mtgpack.Decoder) error {
 		return err
 	}
 
-	m.Threshold, err = d.DecodeUint8()
-	if err != nil {
-		return err
+	if count > 1 {
+		m.Threshold, err = d.DecodeUint8()
+		if err != nil {
+			return err
+		}
+	} else if count == 1 {
+		m.Threshold = 1
 	}
 
 	m.Members = make([]uuid.UUID, int(count))
@@ -48,8 +52,10 @@ func (m MultisigReceiver) EncodeMtg(e *mtgpack.Encoder) error {
 		return err
 	}
 
-	if err := e.EncodeUint8(m.Threshold); err != nil {
-		return err
+	if len(m.Members) > 1 {
+		if err := e.EncodeUint8(m.Threshold); err != nil {
+			return err
+		}
 	}
 
 	for _, member := range m.Members {
