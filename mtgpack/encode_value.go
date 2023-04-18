@@ -7,6 +7,16 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+func EncodeValues(e *Encoder, values ...interface{}) error {
+	for _, v := range values {
+		if err := EncodeValue(e, v); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func EncodeValue(e *Encoder, v interface{}) error {
 	val := reflect.ValueOf(v)
 	typ := val.Type()

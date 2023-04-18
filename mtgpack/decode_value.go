@@ -5,6 +5,16 @@ import (
 	"reflect"
 )
 
+func DecodeValues(d *Decoder, values ...interface{}) error {
+	for _, v := range values {
+		if err := DecodeValue(d, v); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func DecodeValue(d *Decoder, v interface{}) error {
 	val := reflect.ValueOf(v)
 	typ := val.Type()
