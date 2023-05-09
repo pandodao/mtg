@@ -1,73 +1,137 @@
 package main
 
 import (
+	crand "crypto/rand"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
-	"fmt"
-	"net/http"
+	"flag"
+	"log"
+	"math"
+	"math/rand"
+	"os"
 
+	"github.com/google/uuid"
 	"github.com/pandodao/mtg/mtgpack"
 	"github.com/pandodao/mtg/protocol"
+	"github.com/shopspring/decimal"
+)
+
+var (
+	number = flag.Int("n", 10, "number of messages to generate")
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		var body struct {
-			Memo []byte `json:"memo"`
+	flag.Parse()
+
+	messages := make([]interface{}, 0, *number)
+
+	for i := 0; i < *number; i++ {
+		enc := mtgpack.NewEncoder()
+		msg := make(map[string]any)
+
+		header := generateHeader()
+		if err := mtgpack.EncodeValue(enc, header); err != nil {
+			log.Fatalf("encode header failed: %v", err)
 		}
 
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "decode body", err)
-			return
+		msg["header"] = headerToMap(header)
+
+		mmsig := generateMultisigReceivers()
+		if err := mtgpack.EncodeValue(enc, mmsig); err != nil {
+			log.Fatalf("encode multisig failed: %v", err)
+		}
+		msg["mmsig"] = mmsig
+
+		params := generateParams(header.Action)
+		paramsMap := make(map[string]any)
+		for idx := 0; idx < len(params)-1; idx += 2 {
+			name := params[idx].(string)
+			value := params[idx+1]
+
+			if err := mtgpack.EncodeValue(enc, value); err != nil {
+				log.Fatalf("encode %s failed: %v", name, err)
+			}
+
+			paramsMap[name] = value
 		}
 
-		d := mtgpack.NewDecoder(body.Memo)
+		msg["params"] = paramsMap
+		msg["memo"] = base64.StdEncoding.EncodeToString(enc.Bytes())
+		messages = append(messages, msg)
+	}
 
-		var h protocol.Header
-		if err := mtgpack.DecodeValue(d, &h); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "decode header", err)
-			return
-		}
+	if err := json.NewEncoder(os.Stdout).Encode(messages); err != nil {
+		log.Fatalf("encode json failed: %v", err)
+	}
+}
 
-		var receiver protocol.MultisigReceiver
-		if err := mtgpack.DecodeValue(d, &receiver); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "decode receiver", err)
-			return
-		}
+func generateHeader() protocol.Header {
+	header := protocol.Header{
+		Version:    1,
+		ProtocolID: protocol.ProtocolFswap,
+	}
 
-		fillAssetID, err := d.DecodeUUID()
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "decode fill asset id", err)
-			return
-		}
+	if rand.Int()%2 == 0 {
+		header.FollowID = uuid.New()
+	}
 
-		min, err := d.DecodeDecimal()
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "decode min", err)
-			return
-		}
+	header.Action = uint16(rand.Intn(3)) + 1
+	return header
+}
 
-		route, err := d.DecodeString()
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "decode route", err)
-			return
-		}
+func headerToMap(h protocol.Header) map[string]any {
+	return map[string]any{
+		"version":       h.Version,
+		"protocol_id":   h.ProtocolID,
+		"follow_id":     h.FollowID,
+		"has_follow_id": h.FollowID != uuid.Nil,
+		"action":        h.Action,
+	}
+}
 
-		w.WriteHeader(http.StatusOK)
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"header":        h,
-			"receiver":      receiver,
-			"fill_asset_id": fillAssetID,
-			"min":           min,
-			"route":         route,
-		})
-	})
+func generateMultisigReceivers() protocol.MultisigReceiver {
+	r := protocol.MultisigReceiver{
+		Version: 1,
+		Members: make([]uuid.UUID, 0),
+	}
 
-	http.ListenAndServe(":8080", nil)
+	for i := 0; i < rand.Intn(5); i++ {
+		r.Members = append(r.Members, uuid.New())
+	}
+
+	if len(r.Members) > 0 {
+		r.Threshold = uint8(rand.Intn(len(r.Members))) + 1
+	}
+
+	return r
+}
+
+func generateParams(action uint16) []interface{} {
+	var params []interface{}
+
+	switch action {
+	case 1:
+		params = append(params, "asset", uuid.New())
+		params = append(params, "slippage", decimal.NewFromFloat(rand.Float64()).Truncate(8))
+		params = append(params, "exp", int16(rand.Intn(1000)))
+	case 2:
+	case 3:
+		params = append(params, "asset", uuid.New())
+		params = append(params, "route", generateRoute())
+		params = append(params, "min", generateDecimal())
+	}
+
+	return params
+}
+
+func generateRoute() string {
+	b := make([]byte, rand.Intn(10))
+	_, _ = crand.Read(b)
+
+	return hex.EncodeToString(b)
+}
+
+func generateDecimal() decimal.Decimal {
+	return decimal.New(int64(rand.Intn(math.MaxInt16)), -int32(rand.Intn(8)))
 }

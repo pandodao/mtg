@@ -5,6 +5,14 @@ import (
 	"reflect"
 )
 
+func (d *Decoder) DecodeValue(v interface{}) error {
+	return DecodeValue(d, v)
+}
+
+func (d *Decoder) DecodeValues(values ...interface{}) error {
+	return DecodeValues(d, values...)
+}
+
 func DecodeValues(d *Decoder, values ...interface{}) error {
 	for _, v := range values {
 		if err := DecodeValue(d, v); err != nil {
