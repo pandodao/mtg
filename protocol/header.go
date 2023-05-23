@@ -6,10 +6,11 @@ import (
 )
 
 const (
-	ProtocolFswap = 1
-	ProtocolLeaf  = 2
-	ProtocolRings = 3
-	ProtocolPool  = 4
+	ProtocolFswap      uint8 = 1
+	ProtocolLeaf       uint8 = 2
+	ProtocolRings      uint8 = 3
+	ProtocolPool       uint8 = 4
+	ProtocolTradingLab uint8 = 5
 )
 
 type Header struct {
