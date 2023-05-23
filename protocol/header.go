@@ -9,6 +9,7 @@ const (
 	ProtocolFswap = 1
 	ProtocolLeaf  = 2
 	ProtocolRings = 3
+	ProtocolPool  = 4
 )
 
 type Header struct {
