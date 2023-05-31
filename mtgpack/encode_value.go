@@ -25,6 +25,7 @@ func EncodeValues(e *Encoder, values ...interface{}) error {
 	return nil
 }
 
+// EncodeValue encode a value to the encoder.
 func EncodeValue(e *Encoder, v interface{}) error {
 	val := reflect.ValueOf(v)
 	typ := val.Type()
