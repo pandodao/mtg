@@ -23,6 +23,7 @@ func DecodeValues(d *Decoder, values ...interface{}) error {
 	return nil
 }
 
+// DecodeValue decode a value from the decoder.
 func DecodeValue(d *Decoder, v interface{}) error {
 	val := reflect.ValueOf(v)
 	typ := val.Type()
