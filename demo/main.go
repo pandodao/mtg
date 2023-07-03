@@ -2,6 +2,7 @@ package main
 
 import (
 	crand "crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -57,7 +58,10 @@ func main() {
 		}
 
 		msg["params"] = paramsMap
-		msg["memo"] = base64.StdEncoding.EncodeToString(enc.Bytes())
+
+		data := enc.Bytes()
+		data = append(data, checksum(data)...)
+		msg["memo"] = base64.StdEncoding.EncodeToString(data)
 		messages = append(messages, msg)
 	}
 
@@ -68,7 +72,7 @@ func main() {
 
 func generateHeader() protocol.Header {
 	header := protocol.Header{
-		Version:    1,
+		Version:    2,
 		ProtocolID: protocol.ProtocolFswap,
 	}
 
@@ -134,4 +138,10 @@ func generateRoute() string {
 
 func generateDecimal() decimal.Decimal {
 	return decimal.New(int64(rand.Intn(math.MaxInt16)), -int32(rand.Intn(8)))
+}
+
+func checksum(data []byte) []byte {
+	sum := sha256.Sum256(data)
+	sum = sha256.Sum256(sum[:])
+	return sum[:4]
 }
