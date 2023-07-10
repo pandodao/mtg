@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pandodao/mtg/mtgpack"
 	"github.com/pandodao/mtg/protocol"
+	"github.com/pandodao/mtg/protocol/checksum"
 	"github.com/shopspring/decimal"
 )
 
@@ -70,11 +71,21 @@ func decode(ds string, omitMmsig bool, paramsTypesStr string) (*EncodeData, erro
 	}
 
 	dec := mtgpack.NewDecoder(data)
-
 	result := &EncodeData{}
 	if err := dec.DecodeValue(&result.Header); err != nil {
 		return nil, fmt.Errorf("decode header failed: %v", err)
 	}
+
+	if result.Header.Version > 1 {
+		valid := false
+		data, valid = checksum.Sha256Verify(data)
+		if !valid {
+			return nil, fmt.Errorf("checksum verify failed")
+		}
+		dec = mtgpack.NewDecoder(data)
+		_ = dec.DecodeValue(&protocol.Header{})
+	}
+
 	if !omitMmsig {
 		result.Mmsig = &protocol.MultisigReceiver{}
 		if err := dec.DecodeValue(result.Mmsig); err != nil {
@@ -243,5 +254,10 @@ func Encode(es string) (string, error) {
 		}
 	}
 
-	return base64.StdEncoding.EncodeToString(enc.Bytes()), nil
+	data := enc.Bytes()
+	if ed.Header.Version > 1 {
+		data = append(data, checksum.Sha256(data)...)
+	}
+
+	return base64.StdEncoding.EncodeToString(data), nil
 }
