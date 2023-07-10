@@ -70,20 +70,20 @@ func decode(ds string, omitMmsig bool, paramsTypesStr string) (*EncodeData, erro
 		return nil, fmt.Errorf("base64 decode memo failed: %v", err)
 	}
 
+	withChecksum := false
+	if newData, ok := checksum.Sha256Verify(data); ok {
+		data = newData
+		withChecksum = true
+	}
+
 	dec := mtgpack.NewDecoder(data)
 	result := &EncodeData{}
 	if err := dec.DecodeValue(&result.Header); err != nil {
 		return nil, fmt.Errorf("decode header failed: %v", err)
 	}
 
-	if result.Header.Version > 1 {
-		valid := false
-		data, valid = checksum.Sha256Verify(data)
-		if !valid {
-			return nil, fmt.Errorf("checksum verify failed")
-		}
-		dec = mtgpack.NewDecoder(data)
-		_ = dec.DecodeValue(&protocol.Header{})
+	if (withChecksum && result.Header.Version < 2) || (!withChecksum && result.Header.Version != 1) {
+		return nil, fmt.Errorf("invalid version: %d, checksum: %v", result.Header.Version, withChecksum)
 	}
 
 	if !omitMmsig {
