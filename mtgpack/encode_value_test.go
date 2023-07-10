@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -34,6 +35,7 @@ func TestEncodeValue(t *testing.T) {
 	fn(t, uint16(rand.Intn(math.MaxInt16)), 2)
 	fn(t, uint32(rand.Intn(math.MaxInt32)), 4)
 	fn(t, uint64(rand.Int63n(math.MaxInt64)), 8)
+	fn(t, time.Date(2021, 2, 3, 4, 5, 6, 66565, time.Local), 8)
 	fn(t, "foo", 4)
 	fn(t, rand.Intn(2) == 1, 1)
 	fn(t, uuid.New(), 16)

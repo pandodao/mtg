@@ -42,8 +42,11 @@ func DecodeValue(d *Decoder, v interface{}) error {
 		return fmt.Errorf("cannot set value: %s", typ)
 	}
 
-	if typ == decimalType {
+	switch typ {
+	case decimalType:
 		return decodeDecimalValue(d, val)
+	case timeType:
+		return decodeTimeValue(d, val)
 	}
 
 	// decode uuid.UUID
@@ -194,5 +197,15 @@ func decodeByteArrayValue(d *Decoder, val reflect.Value, size int) error {
 	}
 
 	reflect.Copy(val, reflect.ValueOf(b))
+	return nil
+}
+
+func decodeTimeValue(d *Decoder, val reflect.Value) error {
+	t, err := d.DecodeTime()
+	if err != nil {
+		return err
+	}
+
+	val.Set(reflect.ValueOf(t))
 	return nil
 }

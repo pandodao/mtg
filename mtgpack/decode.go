@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -148,4 +149,14 @@ func (d *Decoder) DecodeDecimal() (decimal.Decimal, error) {
 	}
 
 	return decimal.NewFromInt(x).Shift(-fixedDecimalPrecision), nil
+}
+
+// DecodeTime decodes a time.Time from the input.
+func (d *Decoder) DecodeTime() (time.Time, error) {
+	x, err := d.DecodeInt64()
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return time.Unix(0, x), nil
 }

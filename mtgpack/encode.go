@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"math"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -165,4 +166,9 @@ func (e *Encoder) EncodeBool(b bool) error {
 	}
 
 	return e.write1(0)
+}
+
+// EncodeTime encodes the given time into the buffer as an int64 representing the number of
+func (e *Encoder) EncodeTime(t time.Time) error {
+	return e.EncodeInt64(t.UnixNano())
 }
