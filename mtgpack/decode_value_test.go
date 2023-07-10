@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -133,6 +134,15 @@ func TestDecodeValue(t *testing.T) {
 		require.NoErrorf(t, enc.EncodeDecimal(x), "encode decimal")
 		require.NoErrorf(t, DecodeValue(dec, &y), "decode decimal")
 		assert.Equal(t, x.String(), y.String())
+	})
+
+	t.Run("time", func(t *testing.T) {
+		var x, y time.Time
+		x = time.Now()
+
+		require.NoErrorf(t, enc.EncodeTime(x), "encode time")
+		require.NoErrorf(t, DecodeValue(dec, &y), "decode time")
+		assert.Equal(t, x.UnixNano(), y.UnixNano())
 	})
 
 	assert.Emptyf(t, buf.Len(), "decoder has not remaining bytes")

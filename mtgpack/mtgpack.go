@@ -2,6 +2,7 @@ package mtgpack
 
 import (
 	"reflect"
+	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -36,4 +37,7 @@ var (
 
 	// decimalType is a reflection type for decimal.Decimal
 	decimalType = reflect.TypeOf(decimal.Decimal{})
+
+	// timeType is a reflection type for time.Time
+	timeType = reflect.TypeOf(time.Time{})
 )

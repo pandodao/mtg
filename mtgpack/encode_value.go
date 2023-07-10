@@ -3,6 +3,7 @@ package mtgpack
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -40,9 +41,13 @@ func EncodeValue(e *Encoder, v interface{}) error {
 		val = val.Elem()
 	}
 
-	if typ == decimalType {
+	switch typ {
+	case decimalType:
 		d := val.Interface().(decimal.Decimal)
 		return e.EncodeDecimal(d)
+	case timeType:
+		t := val.Interface().(time.Time)
+		return e.EncodeTime(t)
 	}
 
 	// encode uuid.UUID
