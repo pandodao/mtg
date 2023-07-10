@@ -32,6 +32,20 @@ func TestDecode(t *testing.T) {
 			omitMmsig:   true,
 			want:        `{"version":1,"protocol_id":4,"follow_id":"b3b4c09c-2421-41ec-b8d4-bdedfbbd58b1","action":2,"params":["int32:1","string:1","uint8:1"]}`,
 		},
+
+		// with checksum
+		{
+			input:       "AgQBs7TAnCQhQey41L3t+71YsQABAAAAAQE9SmiZ",
+			paramsTypes: `["int32","uint8"]`,
+			omitMmsig:   true,
+			want:        `{"version":2,"protocol_id":4,"follow_id":"b3b4c09c-2421-41ec-b8d4-bdedfbbd58b1","action":1,"params":["int32:1","uint8:1"]}`,
+		},
+		{
+			input:       "AgQBs7TAnCQhQey41L3t+71YsQACAAAAAQExAV5Gv0A=",
+			paramsTypes: `["int32","string","uint8"]`,
+			omitMmsig:   true,
+			want:        `{"version":2,"protocol_id":4,"follow_id":"b3b4c09c-2421-41ec-b8d4-bdedfbbd58b1","action":2,"params":["int32:1","string:1","uint8:1"]}`,
+		},
 	}
 
 	for _, c := range cases {
@@ -67,6 +81,16 @@ func TestEncode(t *testing.T) {
 		{
 			input: `{"version":1,"protocol_id":4,"follow_id":"b3b4c09c-2421-41ec-b8d4-bdedfbbd58b1","action":2,"params":["int32:1","string:1","uint8:1"]}`,
 			want:  "AQQBs7TAnCQhQey41L3t+71YsQACAAAAAQExAQ==",
+		},
+
+		// version 2, with checksum
+		{
+			input: `{"version":2,"protocol_id":4,"follow_id":"b3b4c09c-2421-41ec-b8d4-bdedfbbd58b1","action":1,"params":["int32:1","uint8:1"]}`,
+			want:  "AgQBs7TAnCQhQey41L3t+71YsQABAAAAAQE9SmiZ",
+		},
+		{
+			input: `{"version":2,"protocol_id":4,"follow_id":"b3b4c09c-2421-41ec-b8d4-bdedfbbd58b1","action":2,"params":["int32:1","string:1","uint8:1"]}`,
+			want:  "AgQBs7TAnCQhQey41L3t+71YsQACAAAAAQExAV5Gv0A=",
 		},
 	}
 
