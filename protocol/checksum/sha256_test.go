@@ -15,7 +15,7 @@ func TestSha256(t *testing.T) {
 	}
 
 	sum := Sha256(body[:])
-	assert.Len(t, sum, 4)
+	assert.Len(t, sum, sha256Size)
 
 	data := append(body[:], sum...)
 	body2, ok := Sha256Verify(data)
