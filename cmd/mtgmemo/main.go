@@ -70,12 +70,7 @@ func decode(ds string, omitMmsig bool, paramsTypesStr string) (*EncodeData, erro
 		return nil, fmt.Errorf("base64 decode memo failed: %v", err)
 	}
 
-	withChecksum := false
-	if newData, ok := checksum.Sha256Verify(data); ok {
-		data = newData
-		withChecksum = true
-	}
-
+	data, withChecksum := checksum.Sha256Verify(data)
 	dec := mtgpack.NewDecoder(data)
 	result := &EncodeData{}
 	if err := dec.DecodeValue(&result.Header); err != nil {
