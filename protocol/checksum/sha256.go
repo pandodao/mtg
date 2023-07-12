@@ -18,10 +18,12 @@ func Sha256(data []byte) []byte {
 
 // Sha256Verify returns the body and whether the checksum of data is correct.
 func Sha256Verify(data []byte) ([]byte, bool) {
-	if len(data) < sha256Size {
-		return nil, false
+	if len(data) >= sha256Size {
+		body, sum := data[:len(data)-sha256Size], data[len(data)-sha256Size:]
+		if bytes.Equal(Sha256(body), sum) {
+			return body, true
+		}
 	}
 
-	body, sum := data[:len(data)-sha256Size], data[len(data)-sha256Size:]
-	return body, bytes.Equal(Sha256(body), sum)
+	return data, false
 }

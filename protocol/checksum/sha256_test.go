@@ -14,6 +14,10 @@ func TestSha256(t *testing.T) {
 		assert.NoError(t, err)
 	}
 
+	body1, fail := Sha256Verify(body[:])
+	assert.Equal(t, body[:], body1)
+	assert.False(t, fail)
+
 	sum := Sha256(body[:])
 	assert.Len(t, sum, sha256Size)
 
