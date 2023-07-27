@@ -21,7 +21,8 @@ var (
 	decodeOmitMmsigFlag   = flag.Bool("om", false, "decode omit mmsig")
 	decodeParamsTypesFlag = flag.String("pts", "", "decode params types, example: [\"decimal\", \"uuid\", false, 0, \"int8\"]")
 
-	encodeFlag = flag.String("e", "", "encode")
+	encodeFlag       = flag.String("e", "", "encode")
+	encodeBase64Flag = flag.String("b64", "std", "base64 method, std or url")
 )
 
 type EncodeData struct {
@@ -41,7 +42,7 @@ func main() {
 	case *decodeFlag != "":
 		result, err = Decode(*decodeFlag, *decodeOmitMmsigFlag, *decodeParamsTypesFlag)
 	case *encodeFlag != "":
-		result, err = Encode(*encodeFlag)
+		result, err = Encode(*encodeFlag, *encodeBase64Flag)
 	default:
 		flag.PrintDefaults()
 		return
@@ -65,9 +66,12 @@ func Decode(v string, omitMmsig bool, paramsTypes string) (string, error) {
 }
 
 func decode(ds string, omitMmsig bool, paramsTypesStr string) (*EncodeData, error) {
-	data, err := base64.StdEncoding.DecodeString(ds)
+	data, err := base64.URLEncoding.DecodeString(ds)
 	if err != nil {
-		return nil, fmt.Errorf("base64 decode memo failed: %v", err)
+		data, err = base64.StdEncoding.DecodeString(ds)
+		if err != nil {
+			return nil, fmt.Errorf("base64 decode memo failed: %v", err)
+		}
 	}
 
 	data, withChecksum := checksum.Sha256Verify(data)
@@ -169,7 +173,13 @@ func decode(ds string, omitMmsig bool, paramsTypesStr string) (*EncodeData, erro
 	return result, nil
 }
 
-func Encode(es string) (string, error) {
+func Encode(es string, base64Method string) (string, error) {
+	switch base64Method {
+	case "url", "std":
+	default:
+		return "", fmt.Errorf("invalid base64 method: %s", base64Method)
+	}
+
 	ed := &EncodeData{}
 	if err := json.Unmarshal([]byte(es), ed); err != nil {
 		return "", fmt.Errorf("unmarshal encode data failed: %v", err)
@@ -252,6 +262,10 @@ func Encode(es string) (string, error) {
 	data := enc.Bytes()
 	if ed.Header.Version > 1 {
 		data = append(data, checksum.Sha256(data)...)
+	}
+
+	if base64Method == "url" {
+		return base64.URLEncoding.EncodeToString(data), nil
 	}
 
 	return base64.StdEncoding.EncodeToString(data), nil
