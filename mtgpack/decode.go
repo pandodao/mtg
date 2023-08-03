@@ -3,6 +3,7 @@ package mtgpack
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"time"
 
@@ -149,6 +150,29 @@ func (d *Decoder) DecodeDecimal() (decimal.Decimal, error) {
 	}
 
 	return decimal.NewFromInt(x).Shift(-fixedDecimalPrecision), nil
+}
+
+// DecodeDecimalFromBytes decodes a decimal.Decimal number from the bytes.
+func (d *Decoder) DecodeDecimalFromBytes() (decimal.Decimal, error) {
+	data, err := d.DecodeBytes()
+	if err != nil {
+		return decimal.Zero, err
+	}
+	var v int64
+	switch len(data) {
+	case 1:
+		v = int64(uint8(data[0]))
+	case 2:
+		v = int64(binary.BigEndian.Uint16(data))
+	case 4:
+		v = int64(binary.BigEndian.Uint32(data))
+	case 8:
+		v = int64(binary.BigEndian.Uint64(data))
+	default:
+		return decimal.Zero, fmt.Errorf("invalid decimal bytes length: %d", len(data))
+	}
+
+	return decimal.NewFromInt(v).Shift(-fixedDecimalPrecision), nil
 }
 
 // DecodeTime decodes a time.Time from the input.

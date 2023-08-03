@@ -53,6 +53,7 @@ func main() {
 	}
 	fmt.Println(result)
 }
+
 func Decode(v string, omitMmsig bool, paramsTypes string) (string, error) {
 	r, err := decode(v, omitMmsig, paramsTypes)
 	if err != nil {
@@ -114,6 +115,14 @@ func decode(ds string, omitMmsig bool, paramsTypesStr string) (*EncodeData, erro
 					v := decimal.Zero
 					decodeValue = &v
 					prFunc = func() any { return "decimal:" + v.String() }
+				case "decimal-bytes":
+					d, err := dec.DecodeDecimalFromBytes()
+					if err != nil {
+						return nil, fmt.Errorf("decode decimal-bytes failed: %v", err)
+					}
+					prFunc = func() any {
+						return fmt.Sprintf("decimal-bytes:%s", d.String())
+					}
 				case "uuid":
 					v := uuid.UUID{}
 					decodeValue = &v
@@ -162,8 +171,10 @@ func decode(ds string, omitMmsig bool, paramsTypesStr string) (*EncodeData, erro
 				prFunc = func() any { return param }
 			}
 
-			if err := dec.DecodeValue(decodeValue); err != nil {
-				return nil, fmt.Errorf("decode param failed: %v, param: %v", err, param)
+			if decodeValue != nil {
+				if err := dec.DecodeValue(decodeValue); err != nil {
+					return nil, fmt.Errorf("decode param failed: %v, param: %v", err, param)
+				}
 			}
 
 			result.Params = append(result.Params, prFunc())
@@ -209,6 +220,12 @@ func Encode(es string, base64Method string) (string, error) {
 				switch tv[0] {
 				case "decimal":
 					v, err = decimal.NewFromString(tv[1])
+				case "decimal-bytes":
+					var x decimal.Decimal
+					x, err = decimal.NewFromString(tv[1])
+					if err == nil {
+						err = enc.EncodeDecimalToBytes(x)
+					}
 				case "uuid":
 					v, err = uuid.Parse(tv[1])
 				case "int", "int64":
@@ -254,8 +271,10 @@ func Encode(es string, base64Method string) (string, error) {
 			return "", fmt.Errorf("parse param failed: %v, param: %v", err, param)
 		}
 
-		if err := mtgpack.EncodeValue(enc, v); err != nil {
-			return "", fmt.Errorf("encode param failed: %v, param: %v", err, param)
+		if v != nil {
+			if err := mtgpack.EncodeValue(enc, v); err != nil {
+				return "", fmt.Errorf("encode param failed: %v, param: %v", err, param)
+			}
 		}
 	}
 

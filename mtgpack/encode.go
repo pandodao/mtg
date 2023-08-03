@@ -159,6 +159,31 @@ func (e *Encoder) EncodeDecimal(d decimal.Decimal) error {
 	return e.EncodeInt64(x)
 }
 
+// EncodeDecimal encodes the given decimal into the buffer. It first shifts the decimal
+// by fixedDecimalPrecision and then encodes the resulting bytes using EncodeBytes.
+func (e *Encoder) EncodeDecimalToBytes(d decimal.Decimal) error {
+	x := d.Shift(fixedDecimalPrecision).IntPart()
+	var data []byte
+	switch {
+	case x <= math.MaxUint8:
+		data = []byte{uint8(x)}
+	case x <= math.MaxUint16:
+		var b [2]byte
+		binary.BigEndian.PutUint16(b[:], uint16(x))
+		data = b[:]
+	case x <= math.MaxUint32:
+		var b [4]byte
+		binary.BigEndian.PutUint32(b[:], uint32(x))
+		data = b[:]
+	default:
+		var b [8]byte
+		binary.BigEndian.PutUint64(b[:], uint64(x))
+		data = b[:]
+	}
+
+	return e.EncodeBytes(data)
+}
+
 // EncodeBool encodes the given bool into the buffer as a single byte (1 for true, 0 for false).
 func (e *Encoder) EncodeBool(b bool) error {
 	if b {
