@@ -11,6 +11,7 @@ const (
 	ProtocolRings      uint8 = 3
 	ProtocolPool       uint8 = 4
 	ProtocolTradingLab uint8 = 5
+	ProtocolBwatch     uint8 = 6
 )
 
 type Header struct {
@@ -43,6 +44,9 @@ func (h *Header) DecodeMtg(d *mtgpack.Decoder) error {
 
 	if hasFollowID {
 		h.FollowID, err = d.DecodeUUID()
+		if err != nil {
+			return err
+		}
 	}
 
 	h.Action, err = d.DecodeUint16()
