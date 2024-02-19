@@ -12,6 +12,7 @@ const (
 	ProtocolPool       uint8 = 4
 	ProtocolTradingLab uint8 = 5
 	ProtocolBwatch     uint8 = 6
+	ProtocolHfox       uint8 = 7
 )
 
 type Header struct {
