@@ -13,6 +13,7 @@ const (
 	ProtocolTradingLab uint8 = 5
 	ProtocolBwatch     uint8 = 6
 	ProtocolHfox       uint8 = 7
+	ProtocolBholdings  uint8 = 8
 )
 
 type Header struct {
